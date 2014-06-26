@@ -1195,17 +1195,18 @@ if(Boost_FOUND)
 
   foreach(COMPONENT ${Boost_FIND_COMPONENTS})
     string(TOUPPER ${COMPONENT} UPPERCOMPONENT)
+    string(TOLOWER ${COMPONENT} LOWERCOMPONENT)
 
-    if(NOT TARGET Boost::${COMPONENT})
+    if(NOT TARGET Boost::${LOWERCOMPONENT})
       if(Boost_USE_STATIC_LIBS)
-        add_library(Boost::${COMPONENT} STATIC IMPORTED)
+        add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
       else()
         # Even if Boost_USE_STATIC_LIBS is OFF, we might have static
         # libraries as a result.
-        add_library(Boost::${COMPONENT} UNKNOWN IMPORTED)
+        add_library(Boost::${LOWERCOMPONENT} UNKNOWN IMPORTED)
       endif()
 
-      set_target_properties(Boost::${COMPONENT} PROPERTIES
+      set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
         IMPORTED_LOCATION "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}"
         IMPORTED_LOCATION_RELEASE "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}"
         IMPORTED_LOCATION_DEBUG "${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG}")
