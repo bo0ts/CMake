@@ -1229,7 +1229,8 @@ if(Boost_FOUND)
         IMPORTED_CONFIGURATIONS "DEBUG;RELEASE"
         IMPORTED_LINK_INTERFACE_LANGUAGES CXX
         # bring in the include directories
-        INTERFACE_LINK_LIBRARIES Boost::boost)
+        INTERFACE_LINK_LIBRARIES Boost::boost
+        INTERFACE_COMPILE_DEFINITIONS "BOOST_${UPPERCOMPONENT}_NO_LIB")
     endif()
   endforeach()
 
