@@ -72,6 +72,15 @@
 # sub-directories with different options (e.g. static or shared) will
 # not override the values of the targets created by the first call.
 #
+# Variables that only affect targets::
+#
+# Boost_ENABLE_AUTOLINKING - Set to ON this will create targets which
+#                            are usable even when auto-linking is used
+#                            if the platform supports it. It will
+#                            still be necessary to set the link
+#                            directory for those targets
+#                            though. Defaults to off.
+#
 # Users may set these hints or results as cache entries.  Projects
 # should not read these entries directly but instead use the above
 # result variables.  Note that some hint names start in upper-case
@@ -478,6 +487,9 @@ if(NOT DEFINED Boost_USE_MULTITHREADED)
 endif()
 if(NOT DEFINED Boost_USE_DEBUG_RUNTIME)
   set(Boost_USE_DEBUG_RUNTIME TRUE)
+endif()
+if(NOT DEFINED Boost_ENABLE_AUTO_LINKING)
+  set(Boost_ENABLE_AUTO_LINKING OFF)
 endif()
 
 # Check the version of Boost against the requested version.
@@ -1204,33 +1216,43 @@ if(Boost_FOUND)
     string(TOLOWER ${COMPONENT} LOWERCOMPONENT)
 
     if(NOT TARGET Boost::${LOWERCOMPONENT})
-      if(Boost_USE_STATIC_LIBS)
-        add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
-      else()
-        # Even if Boost_USE_STATIC_LIBS is OFF, we might have static
-        # libraries as a result. On Windows, only ordinary static
-        # libraries use the lib prefix.
-        if(WIN32)
-          get_filename_component(_boost_COMPONENT_NAME "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}" NAME_WE)
-          if(_boost_COMPONENT_NAME MATCHES "^lib")
-            add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
-          else()
-            add_library(Boost::${LOWERCOMPONENT} SHARED IMPORTED)
-          endif()
+      if(NOT Boost_ENABLE_AUTOLINKING AND WIN32 AND NOT CYGWIN)
+        if(Boost_USE_STATIC_LIBS)
+          add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
         else()
-          # On other platforms we do not know.
-          add_library(Boost::${LOWERCOMPONENT} UNKNOWN IMPORTED)
+          # Even if Boost_USE_STATIC_LIBS is OFF, we might have static
+          # libraries as a result. On Windows, only ordinary static
+          # libraries use the lib prefix.
+          if(WIN32)
+            get_filename_component(_boost_COMPONENT_NAME "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}" NAME_WE)
+            if(_boost_COMPONENT_NAME MATCHES "^lib")
+              add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
+            else()
+              add_library(Boost::${LOWERCOMPONENT} SHARED IMPORTED)
+            endif()
+          else()
+            # On other platforms we do not know.
+            add_library(Boost::${LOWERCOMPONENT} UNKNOWN IMPORTED)
+          endif()
         endif()
-      endif()
 
-      set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
-        IMPORTED_LOCATION_RELEASE "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}"
-        IMPORTED_LOCATION_DEBUG "${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG}"
-        IMPORTED_CONFIGURATIONS "DEBUG;RELEASE"
-        IMPORTED_LINK_INTERFACE_LANGUAGES CXX
-        # bring in the include directories
-        INTERFACE_LINK_LIBRARIES Boost::boost
-        INTERFACE_COMPILE_DEFINITIONS "BOOST_${UPPERCOMPONENT}_NO_LIB")
+        set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
+          IMPORTED_LOCATION_RELEASE "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}"
+          IMPORTED_LOCATION_DEBUG "${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG}"
+          IMPORTED_CONFIGURATIONS "DEBUG;RELEASE"
+          IMPORTED_LINK_INTERFACE_LANGUAGES CXX
+          # bring in the include directories
+          INTERFACE_LINK_LIBRARIES Boost::boost
+          INTERFACE_COMPILE_DEFINITIONS "BOOST_${UPPERCOMPONENT}_NO_LIB")
+      else()
+        # Create a target that will still be usable if auto-linking is
+        # used. The caveat is that this will not affect the link
+        # directory.
+        add_library(Boost::${LOWERCOMPONENT} INTERFACE IMPORTED)
+        set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
+          # still define the includes
+          INTERFACE_LINK_LIBRARIES Boost::boost)
+      endif()
     endif()
   endforeach()
 
