@@ -65,7 +65,7 @@
 #                                   during compilation
 #
 # Component targets never depend on each even though they might
-# require each other. It is important to note that the imported
+# require each other.  It is important to note that the imported
 # targets behave differently than variables created by this module:
 # multiple calls to find_package(Boost) in the same directory or
 # sub-directories with different options (e.g. static or shared) will
@@ -1202,8 +1202,19 @@ if(Boost_FOUND)
         add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
       else()
         # Even if Boost_USE_STATIC_LIBS is OFF, we might have static
-        # libraries as a result.
-        add_library(Boost::${LOWERCOMPONENT} UNKNOWN IMPORTED)
+        # libraries as a result. On Windows, only ordinary static
+        # libraries use the lib prefix.
+        if(WIN32)
+          get_filename_component(_boost_COMPONENT_NAME "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}" NAME_WE)
+          if(_boost_COMPONENT_NAME MATCHES "^lib")
+            add_library(Boost::${LOWERCOMPONENT} STATIC IMPORTED)
+          else()
+            add_library(Boost::${LOWERCOMPONENT} SHARED IMPORTED)
+          endif()
+        else()
+          # On other platforms we do not know.
+          add_library(Boost::${LOWERCOMPONENT} UNKNOWN IMPORTED)
+        endif()
       endif()
 
       set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
