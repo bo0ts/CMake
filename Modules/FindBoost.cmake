@@ -60,6 +60,7 @@
 #                                   directory
 #   Boost::<C>                    - shared or static library target for a
 #                                   component (<C> is lower-case)
+#   Boost::disable_autolinking    - interface target to globally disable automatic linking
 #   Boost::diagnostic_definitions - interface target to enable diagnostic
 #                                   information about Boost's automatic linking
 #                                   during compilation
@@ -1191,6 +1192,11 @@ if(Boost_FOUND)
     add_library(Boost::boost INTERFACE IMPORTED)
     set_target_properties(Boost::boost PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR}")
+  endif()
+  if(NOT TARGET Boost::disable_autolinking)
+    add_library(Boost::boost INTERFACE IMPORTED)
+    set_target_properties(Boost::boost PROPERTIES
+      INTERFACE_COMPILE_DEFINITIONS "BOOST_ALL_NO_LIB")
   endif()
 
   foreach(COMPONENT ${Boost_FIND_COMPONENTS})
