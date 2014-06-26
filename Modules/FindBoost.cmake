@@ -1209,7 +1209,9 @@ if(Boost_FOUND)
       set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
         IMPORTED_LOCATION "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}"
         IMPORTED_LOCATION_RELEASE "${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE}"
-        IMPORTED_LOCATION_DEBUG "${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG}")
+        IMPORTED_LOCATION_DEBUG "${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG}"
+        # bring in the include directories
+        INTERFACE_LINK_LIBRARIES Boost::boost)
     endif()
   endforeach()
 
