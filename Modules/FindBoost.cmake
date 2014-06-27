@@ -1242,7 +1242,7 @@ if(Boost_FOUND)
           IMPORTED_CONFIGURATIONS "DEBUG;RELEASE"
           IMPORTED_LINK_INTERFACE_LANGUAGES CXX
           # bring in the include directories
-          INTERFACE_LINK_LIBRARIES Boost::boost
+          INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR}")
           INTERFACE_COMPILE_DEFINITIONS "BOOST_${UPPERCOMPONENT}_NO_LIB")
       else()
         # Create a target that will still be usable if auto-linking is
@@ -1251,7 +1251,7 @@ if(Boost_FOUND)
         add_library(Boost::${LOWERCOMPONENT} INTERFACE IMPORTED)
         set_target_properties(Boost::${LOWERCOMPONENT} PROPERTIES
           # still define the includes
-          INTERFACE_LINK_LIBRARIES Boost::boost)
+          INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR}")
       endif()
     endif()
   endforeach()
